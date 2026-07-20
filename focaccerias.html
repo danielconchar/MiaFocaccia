@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Focaccerias">
+<title>Focaccerias</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f9f8f5;
+    --border: #e5e3dc;
+    --border2: #d0cec5;
+    --text: #1a1a18;
+    --text2: #6b6960;
+    --text3: #9b9890;
+    --accent: #2d5a27;
+    --accent-bg: #eaf3e8;
+    --accent-text: #2d5a27;
+    --warn: #7a4a00;
+    --warn-bg: #fff4e0;
+    --danger: #8b1a1a;
+    --danger-bg: #fdf0f0;
+    --radius: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
+  
+  #app { display: flex; flex-direction: column; height: 100dvh; }
+  
+  /* Header */
+  .hdr { background: var(--surface); border-bottom: 1px solid var(--border); padding: calc(var(--safe-top) + 12px) 16px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .hdr-title { font-size: 17px; font-weight: 600; }
+  .hdr-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .hdr-badge { background: var(--warn-bg); color: var(--warn); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+
+  /* Content */
+  .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; padding-bottom: calc(80px + var(--safe-bot)); }
+
+  /* Bottom nav */
+  .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; padding-bottom: var(--safe-bot); }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; gap: 3px; color: var(--text3); font-size: 10px; font-weight: 500; border: none; background: none; cursor: pointer; }
+  .nav-btn svg { width: 22px; height: 22px; }
+  .nav-btn.active { color: var(--accent); }
+
+  /* Cards */
+  .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; margin-bottom: 10px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+
+  /* Metrics grid */
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .metric { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 12px; }
+  .metric .lbl { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .metric .val { font-size: 20px; font-weight: 700; }
+  .metric.wide { grid-column: span 2; }
+
+  /* Order list */
+  .order-item { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 12px 14px; margin-bottom: 8px; }
+  .order-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .order-name { font-weight: 600; font-size: 15px; }
+  .order-total { font-weight: 700; font-size: 15px; }
+  .order-meta { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+  .order-prods { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .order-footer { display: flex; justify-content: space-between; align-items: center; }
+  
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-pend { background: var(--warn-bg); color: var(--warn); }
+  .badge-pag { background: var(--accent-bg); color: var(--accent-text); }
+  .badge-ent { background: #f0f0f0; color: var(--text2); }
+
+  /* Select inline */
+  select.inline { border: 1px solid var(--border2); border-radius: 6px; font-size: 12px; padding: 4px 6px; background: var(--bg); color: var(--text); font-family: inherit; }
+
+  /* Filters */
+  .filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit; }
+  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Form */
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 15px; background: var(--surface); color: var(--text); font-family: inherit; -webkit-appearance: none; }
+  .form-group textarea { height: 80px; resize: none; }
+  .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Product rows */
+  .prod-item { background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; }
+  .prod-item select { width: 100%; padding: 8px; border: 1px solid var(--border2); border-radius: 8px; font-size: 13px; background: var(--surface); color: var(--text); font-family: inherit; margin-bottom: 8px; -webkit-appearance: none; }
+  .prod-item-row { display: flex; align-items: center; justify-content: space-between; }
+  .qty-control { display: flex; align-items: center; gap: 10px; }
+  .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text); font-family: inherit; }
+  .qty-val { font-size: 16px; font-weight: 600; min-width: 20px; text-align: center; }
+  .prod-price { font-size: 13px; color: var(--text2); }
+  .prod-del { color: var(--danger); font-size: 13px; background: none; border: none; cursor: pointer; padding: 4px; font-family: inherit; }
+
+  /* Total bar */
+  .total-bar { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+  .total-bar .lbl { font-size: 13px; color: var(--text2); }
+  .total-bar .val { font-size: 22px; font-weight: 700; }
+
+  /* Buttons */
+  .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn-secondary { width: 100%; padding: 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border2); border-radius: var(--radius); font-size: 15px; cursor: pointer; font-family: inherit; margin-top: 8px; }
+  .btn-add { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: var(--accent-bg); color: var(--accent); border: 1px dashed var(--accent); border-radius: var(--radius); font-size: 14px; cursor: pointer; font-family: inherit; width: 100%; justify-content: center; margin-bottom: 4px; }
+
+  /* Bar chart */
+  .bar-item { margin-bottom: 12px; }
+  .bar-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .bar-track { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+
+  /* Commission table */
+  .com-row { display: flex; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 6px; font-size: 13px; }
+  .com-row:last-child { border-bottom: none; }
+  .com-name { flex: 1.2; font-weight: 600; }
+  .com-ventas { flex: 1.3; text-align: right; }
+  .com-pct { flex: 0.6; text-align: right; color: var(--text3); }
+  .com-val { flex: 1.3; text-align: right; font-weight: 700; color: var(--accent); }
+
+  /* Month tabs */
+  .month-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; margin-bottom: 12px; }
+  .month-tabs { display: flex; gap: 6px; white-space: nowrap; padding: 2px 0; }
+  .month-tab { padding: 6px 12px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit; }
+  .month-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Loading */
+  .loading { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+  .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin: 0 3px; animation: pulse 1.2s ease-in-out infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:0.3;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+  .sync-bar { background: var(--accent-bg); color: var(--accent-text); font-size: 12px; padding: 6px 16px; text-align: center; }
+  .error-bar { background: var(--danger-bg); color: var(--danger); font-size: 12px; padding: 6px 16px; text-align: center; }
+
+  /* Pagination */
+  .pag { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 0; font-size: 13px; color: var(--text2); }
+  .pag-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px; font-family: inherit; }
+  .pag-btn:disabled { opacity: 0.4; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">🍞 Focaccerias</div>
+      <div class="hdr-sub" id="sync-status">Conectando...</div>
+    </div>
+    <div class="hdr-badge" id="pend-badge" style="display:none"></div>
+  </div>
+  <div id="status-bar"></div>
+  <div class="content" id="content"></div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="goTab('pedidos',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+      Pedidos
+    </button>
+    <button class="nav-btn" onclick="goTab('nuevo',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Nuevo
+    </button>
+    <button class="nav-btn" onclick="goTab('ingresos',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Ingresos
+    </button>
+    <button class="nav-btn" onclick="goTab('comisiones',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 15h.01M9.5 15l5-6"/></svg>
+      Comisiones
+    </button>
+  </nav>
+</div>
+
+<script>
+const SUPA_URL = 'https://murihcvpsugsodsqroyv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11cmloY3Zwc3Vnc29kc3Fyb3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjkzNTEsImV4cCI6MjEwMDA0NTM1MX0.n9WL3nSnaJCwE5pX4ZhWjZWs_B876PmQY8H-dL3ip1g';
+const HEADERS = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+const VEND = { mane:'Mane', daniel:'Daniel', luca:'Luca', german:'Germán' };
+const PRODS = [
+  {name:'Focaccia Roma (tomate y orégano)', price:14000},
+  {name:'Focaccia Napoli (cebolla y orégano)', price:14000},
+  {name:'Focaccia Genova (aceituna y romero)', price:14000},
+  {name:'Focaccia Verona (tomate y pesto)', price:14000},
+  {name:'Tabla Focaccia Roma', price:20900},
+  {name:'Tabla Focaccia Napoli', price:20900},
+  {name:'Tabla Focaccia Genova', price:20900},
+  {name:'Tabla Focaccia Verona', price:20900},
+  {name:'Pollo al Curry Suave (congelado)', price:14000},
+  {name:'Pollo Pomodoro Cremoso (congelado)', price:14000},
+];
+const HIST = [{"id":1,"cliente":"Caro Marquez","telefono":"","fecha":"2025-07-30","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":2,"cliente":"Dani Calderon","telefono":"","fecha":"2025-07-30","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":3,"cliente":"Momo","telefono":"","fecha":"2025-08-01","vendedor":"mane","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":4,"cliente":"Pili Lopez","telefono":"","fecha":"2025-08-01","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":15000}],"total":15000,"estado":"Pagado"},{"id":5,"cliente":"Giorgio","telefono":"","fecha":"2025-08-01","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":6,"cliente":"Carlos Godoy","telefono":"","fecha":"2025-08-06","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":7,"cliente":"Pia Erlwein","telefono":"","fecha":"2025-08-07","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":8,"cliente":"Maricarmen Clemente","telefono":"","fecha":"2025-08-07","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":9,"cliente":"Rossana Bravo","telefono":"","fecha":"2025-08-07","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":10,"cliente":"Daniel Desmet","telefono":"","fecha":"2025-08-08","vendedor":"mane","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":11,"cliente":"Caro Silva","telefono":"","fecha":"2025-08-08","vendedor":"mane","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":12,"cliente":"Dani Calderón","telefono":"","fecha":"2025-08-08","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":13,"cliente":"Javi Maroto","telefono":"","fecha":"2025-08-08","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":14,"cliente":"Rene Benavides","telefono":"","fecha":"2025-08-08","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":15,"cliente":"Pili Lopez","telefono":"","fecha":"2025-08-09","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":16,"cliente":"Cristian Goldberg","telefono":"","fecha":"2025-08-09","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":17,"cliente":"Maite Pessis","telefono":"","fecha":"2025-08-12","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":18,"cliente":"Cesar Vallejo","telefono":"","fecha":"2025-08-12","vendedor":"mane","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":19,"cliente":"German","telefono":"","fecha":"2025-08-14","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14500}],"total":14500,"estado":"Pagado"},{"id":20,"cliente":"Alicia","telefono":"","fecha":"2025-08-14","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":21,"cliente":"Mauricio Meyer","telefono":"","fecha":"2025-08-14","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":22,"cliente":"German","telefono":"","fecha":"2025-08-15","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":23,"cliente":"Diego Luna","telefono":"","fecha":"2025-08-16","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":24,"cliente":"Mayte","telefono":"","fecha":"2025-08-17","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":25,"cliente":"Jose Muñoz","telefono":"","fecha":"2025-08-20","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":26,"cliente":"Momo","telefono":"","fecha":"2025-08-21","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":27,"cliente":"German","telefono":"","fecha":"2025-08-22","vendedor":"german","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14500}],"total":14500,"estado":"Pagado"},{"id":28,"cliente":"Jose Navarro","telefono":"","fecha":"2025-08-21","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":29,"cliente":"German","telefono":"","fecha":"2025-08-23","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14500}],"total":14500,"estado":"Pagado"},{"id":30,"cliente":"Cesar Vallejo","telefono":"","fecha":"2025-08-23","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":31,"cliente":"Ale San Roman","telefono":"","fecha":"2025-08-23","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":32,"cliente":"Jean Paul Eyssatieur","telefono":"","fecha":"2025-08-23","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":33,"cliente":"German","telefono":"","fecha":"2025-08-24","vendedor":"german","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14500}],"total":14500,"estado":"Pagado"},{"id":34,"cliente":"Mauricio Meyer","telefono":"","fecha":"2025-08-28","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":35,"cliente":"Moira searle","telefono":"","fecha":"2025-08-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":36,"cliente":"Matias Silva","telefono":"","fecha":"2025-08-22","vendedor":"luca","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":37,"cliente":"Pili Lopez","telefono":"","fecha":"2025-09-06","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":38,"cliente":"Moira searle","telefono":"","fecha":"2025-09-26","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":39,"cliente":"Momo","telefono":"","fecha":"2025-09-30","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":40,"cliente":"Pili Lopez","telefono":"","fecha":"2025-10-04","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":42000,"estado":"Pagado"},{"id":41,"cliente":"Claudia De la Cerda","telefono":"","fecha":"2025-10-04","vendedor":"mane","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":42,"cliente":"—","telefono":"","fecha":"2025-10-04","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":43,"cliente":"Matias Silva","telefono":"","fecha":"2025-10-04","vendedor":"luca","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":44,"cliente":"Hans Preisler","telefono":"","fecha":"2025-10-11","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":45,"cliente":"Mayte Contreras","telefono":"","fecha":"2025-10-12","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":46,"cliente":"Alicia","telefono":"","fecha":"2025-10-17","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":2,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":56000,"estado":"Pagado"},{"id":47,"cliente":"Dani Calderon","telefono":"","fecha":"2025-10-16","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":48,"cliente":"Junta Mane","telefono":"","fecha":"2025-10-17","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":2,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":42000,"estado":"Pagado"},{"id":49,"cliente":"Solange Cadiz","telefono":"","fecha":"2025-10-18","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":2,"price":14000}],"total":28000,"estado":"Pagado"},{"id":50,"cliente":"Carolina","telefono":"","fecha":"2025-10-25","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":51,"cliente":"Luca","telefono":"","fecha":"2025-10-24","vendedor":"luca","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":52,"cliente":"Mayte Contreras","telefono":"","fecha":"2025-10-26","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":53,"cliente":"Daniel Mancilla","telefono":"","fecha":"2025-10-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":54,"cliente":"Asado AMP","telefono":"","fecha":"2025-10-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":55,"cliente":"Jose Navarro","telefono":"","fecha":"2025-10-30","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":42000,"estado":"Pagado"},{"id":56,"cliente":"Carlos Pardo","telefono":"","fecha":"2025-10-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":57,"cliente":"Hans Preisler","telefono":"","fecha":"2025-10-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":58,"cliente":"German","telefono":"","fecha":"2025-10-29","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":59,"cliente":"Caro Marquez","telefono":"","fecha":"2025-10-30","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":60,"cliente":"Suegra Vicho","telefono":"","fecha":"2025-11-01","vendedor":"luca","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":61,"cliente":"Carla Palacios","telefono":"","fecha":"2025-11-01","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":62,"cliente":"German","telefono":"","fecha":"2025-11-08","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":3,"price":14000}],"total":56000,"estado":"Pagado"},{"id":63,"cliente":"German","telefono":"","fecha":"2025-11-12","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":64,"cliente":"German","telefono":"","fecha":"2025-11-14","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":2,"price":14000}],"total":56000,"estado":"Pagado"},{"id":65,"cliente":"Dani Calderon","telefono":"","fecha":"2025-11-16","vendedor":"mane","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":66,"cliente":"German","telefono":"","fecha":"2025-11-16","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":67,"cliente":"Jose Muñoz","telefono":"","fecha":"2025-11-19","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":68,"cliente":"Dario Perez","telefono":"","fecha":"2025-11-19","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":69,"cliente":"German","telefono":"","fecha":"2025-11-21","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":2,"price":14000}],"total":28000,"estado":"Pagado"},{"id":70,"cliente":"Dani Calderon","telefono":"","fecha":"2025-11-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":71,"cliente":"Juanito","telefono":"","fecha":"2025-11-22","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":72,"cliente":"German","telefono":"","fecha":"2025-11-26","vendedor":"german","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":73,"cliente":"Mauricio Meyer","telefono":"","fecha":"2025-11-28","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":74,"cliente":"Hans Preisler","telefono":"","fecha":"2025-11-27","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":75,"cliente":"Rodrigo Espinosa","telefono":"","fecha":"2025-11-28","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":76,"cliente":"German","telefono":"","fecha":"2025-11-28","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":77,"cliente":"Moira Searle","telefono":"","fecha":"2025-11-28","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":78,"cliente":"Maite","telefono":"","fecha":"2025-11-30","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":79,"cliente":"Carla Palacios","telefono":"","fecha":"2025-11-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":2,"price":14000}],"total":28000,"estado":"Pagado"},{"id":80,"cliente":"German","telefono":"","fecha":"2025-12-01","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":81,"cliente":"Junta Zapping","telefono":"","fecha":"2025-12-04","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":12500},{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":12500},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":12500},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":12500}],"total":50000,"estado":"Pagado"},{"id":82,"cliente":"Dani","telefono":"","fecha":"2025-12-05","vendedor":"mane","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":83,"cliente":"Germán","telefono":"","fecha":"2025-12-05","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":84,"cliente":"Juanito Martinez","telefono":"","fecha":"2025-12-14","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":85,"cliente":"Cuñado Luca","telefono":"","fecha":"2025-12-17","vendedor":"luca","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":86,"cliente":"Thania","telefono":"","fecha":"2025-12-18","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":12500},{"name":"Focaccia Verona (tomate y pesto)","qty":3,"price":12500}],"total":50000,"estado":"Pagado"},{"id":87,"cliente":"Dani","telefono":"","fecha":"2025-12-22","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":88,"cliente":"Jose Perez","telefono":"","fecha":"2025-12-25","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":12500},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":12500}],"total":25000,"estado":"Pagado"},{"id":89,"cliente":"Pili Lopez","telefono":"","fecha":"2025-12-25","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":12500},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":12500}],"total":25000,"estado":"Pagado"},{"id":90,"cliente":"German","telefono":"","fecha":"2025-12-24","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":56000,"estado":"Pagado"},{"id":91,"cliente":"Josefa Luca","telefono":"","fecha":"2025-12-24","vendedor":"luca","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":92,"cliente":"Dani navidad","telefono":"","fecha":"2025-12-24","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":93,"cliente":"German","telefono":"","fecha":"2025-12-31","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":4,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":2,"price":14000}],"total":98000,"estado":"Pagado"},{"id":94,"cliente":"Perro Merino","telefono":"","fecha":"2025-12-31","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":95,"cliente":"German","telefono":"","fecha":"2026-01-23","vendedor":"german","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":96,"cliente":"German","telefono":"","fecha":"2026-01-25","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":97,"cliente":"German","telefono":"","fecha":"2026-03-01","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":98,"cliente":"Junta Mane","telefono":"","fecha":"2026-03-04","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":99,"cliente":"German","telefono":"","fecha":"2026-03-07","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":100,"cliente":"Felipe","telefono":"","fecha":"2026-03-07","vendedor":"luca","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":101,"cliente":"Jose","telefono":"","fecha":"2026-03-13","vendedor":"luca","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":102,"cliente":"German","telefono":"","fecha":"2026-03-13","vendedor":"german","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":103,"cliente":"Junta Daniel","telefono":"","fecha":"2026-03-19","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":104,"cliente":"Felipe","telefono":"","fecha":"2026-03-19","vendedor":"luca","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":105,"cliente":"German","telefono":"","fecha":"2026-04-01","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":106,"cliente":"Pilar Lopez","telefono":"","fecha":"2026-04-10","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":107,"cliente":"German","telefono":"","fecha":"2026-04-18","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":2,"price":14000}],"total":42000,"estado":"Pagado"},{"id":108,"cliente":"Dani Calderon","telefono":"","fecha":"2026-04-22","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":109,"cliente":"Perro Merino","telefono":"","fecha":"2026-04-24","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":110,"cliente":"Mayte Contreras","telefono":"","fecha":"2026-04-26","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":111,"cliente":"German","telefono":"","fecha":"2026-05-02","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":112,"cliente":"German","telefono":"","fecha":"2026-05-02","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":113,"cliente":"Berni Cuevas","telefono":"","fecha":"2026-05-02","vendedor":"mane","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":114,"cliente":"Dani Calderon","telefono":"","fecha":"2026-05-10","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":115,"cliente":"Andres Nazar","telefono":"","fecha":"2026-05-11","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":116,"cliente":"Jose Navarro","telefono":"","fecha":"2026-05-08","vendedor":"mane","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":117,"cliente":"Perro","telefono":"","fecha":"2026-05-08","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":118,"cliente":"Juanito Martinez","telefono":"","fecha":"2026-05-10","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":119,"cliente":"German","telefono":"","fecha":"2026-05-10","vendedor":"german","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":120,"cliente":"Alvaro montané","telefono":"","fecha":"2026-05-10","vendedor":"mane","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":121,"cliente":"Augusta Scagliotti","telefono":"","fecha":"2026-05-13","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":122,"cliente":"Flavio Rubilar","telefono":"","fecha":"2026-05-13","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":123,"cliente":"German","telefono":"","fecha":"2026-05-15","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Genova (aceituna y romero)","qty":2,"price":14000}],"total":42000,"estado":"Pagado"},{"id":124,"cliente":"Cumple Mono","telefono":"","fecha":"2026-05-15","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":10,"price":6000}],"total":60000,"estado":"Pagado"},{"id":125,"cliente":"Fran Fuensalida","telefono":"","fecha":"2026-05-30","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000},{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":126,"cliente":"Augusta Scagliotti","telefono":"","fecha":"2026-05-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":127,"cliente":"Sebastian Tippmann","telefono":"","fecha":"2026-05-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":128,"cliente":"German","telefono":"","fecha":"2026-05-29","vendedor":"german","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":129,"cliente":"Asado Daniel","telefono":"","fecha":"2026-05-29","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":130,"cliente":"Dani Calderón","telefono":"","fecha":"2026-06-06","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":131,"cliente":"Mayte Contreras","telefono":"","fecha":"2026-06-14","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Genova (aceituna y romero)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":132,"cliente":"German","telefono":"","fecha":"2026-06-16","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":14000},{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":28000,"estado":"Pagado"},{"id":133,"cliente":"Diego Luna","telefono":"","fecha":"2026-06-20","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":134,"cliente":"German","telefono":"","fecha":"2026-06-17","vendedor":"german","notas":"","items":[{"name":"Pollo al Curry Suave (congelado)","qty":3,"price":14000}],"total":42000,"estado":"Pagado"},{"id":135,"cliente":"Vale De la Fuente","telefono":"","fecha":"2026-06-26","vendedor":"mane","notas":"","items":[{"name":"Focaccia Verona (tomate y pesto)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":136,"cliente":"German","telefono":"","fecha":"2026-06-26","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pagado"},{"id":137,"cliente":"German","telefono":"","fecha":"2026-07-04","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":14000}],"total":14000,"estado":"Pendiente"},{"id":138,"cliente":"German","telefono":"","fecha":"2026-07-05","vendedor":"german","notas":"","items":[{"name":"Pollo al Curry Suave (congelado)","qty":1,"price":14000}],"total":14000,"estado":"Pendiente"},{"id":139,"cliente":"German","telefono":"","fecha":"2026-07-16","vendedor":"german","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":2,"price":14000}],"total":28000,"estado":"Pendiente"},{"id":140,"cliente":"Dani Calderon","telefono":"","fecha":"2026-07-15","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":12500}],"total":12500,"estado":"Pagado"},{"id":141,"cliente":"German","telefono":"","fecha":"2026-07-17","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":20900}],"total":20900,"estado":"Pendiente"},{"id":142,"cliente":"Alvaro Montane","telefono":"","fecha":"2026-07-18","vendedor":"daniel","notas":"","items":[{"name":"Focaccia Napoli (cebolla y orégano)","qty":1,"price":12500}],"total":12500,"estado":"Pendiente"},{"id":143,"cliente":"German","telefono":"","fecha":"2026-07-18","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":2,"price":20900}],"total":41800,"estado":"Pendiente"},{"id":144,"cliente":"German","telefono":"","fecha":"2026-07-22","vendedor":"german","notas":"","items":[{"name":"Focaccia Roma (tomate y orégano)","qty":1,"price":20900}],"total":20900,"estado":"Pendiente"}];
+
+let orders = [];
+let tab = 'pedidos';
+let filterEstado = '';
+let filterVend = '';
+let ingMes = 'total';
+let comMes = '';
+let page = 0;
+const PER = 20;
+let newItems = [];
+let comPct = { mane:10, daniel:10, luca:10, german:25 };
+
+const fmt = n => '$' + Math.round(n).toLocaleString('es-CL');
+
+// Supabase API
+async function sbFetch(path, opts={}) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    ...opts,
+    headers: { ...HEADERS, ...(opts.headers||{}) }
+  });
+  if (!r.ok) { const t = await r.text(); throw new Error(t); }
+  return r.status === 204 ? null : r.json();
+}
+
+async function loadOrders() {
+  setStatus('Sincronizando...', false);
+  try {
+    const data = await sbFetch('pedidos?order=id.desc&limit=1000');
+    if (data.length === 0) {
+      // Primera vez: cargar histórico
+      setStatus('Cargando historial...', false);
+      await seedHistory();
+      const data2 = await sbFetch('pedidos?order=id.desc&limit=1000');
+      orders = data2;
+    } else {
+      orders = data;
+    }
+    setStatus('Sincronizado ✓', false);
+    updateBadge();
+    render();
+  } catch(e) {
+    setStatus('Sin conexión — datos locales', true);
+    orders = [...HIST].reverse();
+    updateBadge();
+    render();
+  }
+}
+
+async function seedHistory() {
+  const chunks = [];
+  for (let i = 0; i < HIST.length; i += 50) chunks.push(HIST.slice(i, i+50));
+  for (const chunk of chunks) {
+    await sbFetch('pedidos', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify(chunk)
+    });
+  }
+}
+
+async function saveOrder(order) {
+  await sbFetch('pedidos', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(order)
+  });
+}
+
+async function updateEstado(id, estado) {
+  await sbFetch('pedidos?id=eq.' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({ estado })
+  });
+}
+
+async function deleteOrder(id) {
+  await sbFetch('pedidos?id=eq.' + id, { method: 'DELETE' });
+}
+
+function setStatus(msg, err) {
+  document.getElementById('sync-status').textContent = msg;
+  const sb = document.getElementById('status-bar');
+  sb.className = err ? 'error-bar' : '';
+  sb.textContent = err ? msg : '';
+}
+
+function updateBadge() {
+  const pend = orders.filter(o => o.estado === 'Pendiente').length;
+  const b = document.getElementById('pend-badge');
+  if (pend > 0) { b.textContent = pend + ' pendientes'; b.style.display = ''; }
+  else b.style.display = 'none';
+}
+
+function goTab(t, btn) {
+  tab = t; page = 0;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const c = document.getElementById('content');
+  if (tab === 'pedidos') c.innerHTML = renderPedidos();
+  else if (tab === 'nuevo') c.innerHTML = renderNuevo();
+  else if (tab === 'ingresos') c.innerHTML = renderIngresos();
+  else if (tab === 'comisiones') c.innerHTML = renderComisiones();
+}
+
+function renderPedidos() {
+  let list = orders.filter(o =>
+    (filterEstado ? o.estado === filterEstado : true) &&
+    (filterVend ? o.vendedor === filterVend : true)
+  );
+  const total = list.length;
+  const pages = Math.ceil(total / PER);
+  if (page >= pages) page = Math.max(0, pages-1);
+  const slice = list.slice(page*PER, (page+1)*PER);
+
+  const totalFact = orders.reduce((s,o) => s+o.total, 0);
+  const cobrado = orders.filter(o=>o.estado!=='Pendiente').reduce((s,o)=>s+o.total,0);
+  const pend = orders.filter(o=>o.estado==='Pendiente').length;
+
+  return `
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Pedidos</div><div class="val">${orders.length}</div></div>
+    <div class="metric"><div class="lbl">Pendientes</div><div class="val" style="color:var(--warn)">${pend}</div></div>
+    <div class="metric"><div class="lbl">Facturado</div><div class="val" style="font-size:16px">${fmt(totalFact)}</div></div>
+    <div class="metric"><div class="lbl">Cobrado</div><div class="val" style="font-size:16px;color:var(--accent)">${fmt(cobrado)}</div></div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn ${!filterEstado?'active':''}" onclick="filterEstado='';page=0;render()">Todos</button>
+    <button class="filter-btn ${filterEstado==='Pendiente'?'active':''}" onclick="filterEstado='Pendiente';page=0;render()">Pendientes</button>
+    <button class="filter-btn ${filterEstado==='Pagado'?'active':''}" onclick="filterEstado='Pagado';page=0;render()">Pagados</button>
+    <select class="inline" onchange="filterVend=this.value;page=0;render()">
+      <option value="" ${!filterVend?'selected':''}>Todos</option>
+      ${Object.entries(VEND).map(([k,n])=>`<option value="${k}" ${filterVend===k?'selected':''}>${n}</option>`).join('')}
+    </select>
+  </div>
+  ${!slice.length ? '<div class="empty">No hay pedidos</div>' : slice.map(o => `
+  <div class="order-item">
+    <div class="order-top">
+      <div class="order-name">${o.cliente}</div>
+      <div class="order-total">${fmt(o.total)}</div>
+    </div>
+    <div class="order-meta">${o.fecha||'—'} · ${o.vendedor ? VEND[o.vendedor]||o.vendedor : '—'}</div>
+    <div class="order-prods">${o.items.map(i=>`${i.qty}× ${i.name.split(' (')[0]}`).join(', ')}</div>
+    <div class="order-footer">
+      <select class="inline" onchange="doEstado(${o.id},this.value)">
+        <option value="Pendiente" ${o.estado==='Pendiente'?'selected':''}>⏳ Pendiente</option>
+        <option value="Pagado" ${o.estado==='Pagado'?'selected':''}>✓ Pagado</option>
+        <option value="Entregado" ${o.estado==='Entregado'?'selected':''}>📦 Entregado</option>
+      </select>
+      <button onclick="doDelete(${o.id})" style="background:none;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:4px">Eliminar</button>
+    </div>
+  </div>`).join('')}
+  ${pages > 1 ? `<div class="pag">
+    <button class="pag-btn" onclick="page--;render()" ${page===0?'disabled':''}>←</button>
+    <span>${page+1} / ${pages}</span>
+    <button class="pag-btn" onclick="page++;render()" ${page===pages-1?'disabled':''}>→</button>
+  </div>` : ''}`;
+}
+
+function renderNuevo() {
+  const total = newItems.reduce((s,i) => s + i.price*i.qty, 0);
+  const tmr = new Date(); tmr.setDate(tmr.getDate()+1);
+  const defDate = tmr.toISOString().split('T')[0];
+  return `
+  <div class="card">
+    <div class="card-title">Nuevo pedido</div>
+    <div class="form-group"><label>Cliente</label><input id="nc" placeholder="Nombre del cliente"></div>
+    <div class="form-row2">
+      <div class="form-group"><label>Teléfono</label><input id="nt" placeholder="+56 9..."></div>
+      <div class="form-group"><label>Fecha entrega</label><input type="date" id="nf" value="${defDate}"></div>
+    </div>
+    <div class="form-group"><label>Vendedor/a</label>
+      <select id="nv">
+        <option value="">Sin comisión</option>
+        ${Object.entries(VEND).map(([k,n])=>`<option value="${k}">${n}${k==='german'?' (25%)':''}</option>`).join('')}
+      </select>
+    </div>
+    <div class="card-title" style="margin-bottom:8px">Productos</div>
+    ${newItems.map((item,i) => `
+    <div class="prod-item">
+      <select onchange="newItems[${i}].price=parseInt(this.options[this.selectedIndex].getAttribute('data-p'));newItems[${i}].name=this.options[this.selectedIndex].text;updTotal()">
+        ${PRODS.map(p=>`<option data-p="${p.price}" ${item.name===p.name?'selected':''}>${p.name}</option>`).join('')}
+      </select>
+      <div class="prod-item-row">
+        <div class="qty-control">
+          <button class="qty-btn" onclick="newItems[${i}].qty=Math.max(1,newItems[${i}].qty-1);updTotal()">−</button>
+          <span class="qty-val">${item.qty}</span>
+          <button class="qty-btn" onclick="newItems[${i}].qty++;updTotal()">+</button>
+        </div>
+        <span class="prod-price">${fmt(item.price * item.qty)}</span>
+        <button class="prod-del" onclick="newItems.splice(${i},1);render()">✕</button>
+      </div>
+    </div>`).join('')}
+    <button class="btn-add" onclick="newItems.push({name:PRODS[0].name,price:PRODS[0].price,qty:1});render()">+ Agregar producto</button>
+    <div class="form-group"><label>Notas</label><textarea id="nn" placeholder="Indicaciones..."></textarea></div>
+    <div class="total-bar"><span class="lbl">Total</span><span class="val" id="ntotal">${fmt(total)}</span></div>
+    <button class="btn-primary" onclick="doGuardar()">Guardar pedido</button>
+    <button class="btn-secondary" onclick="newItems=[];render()">Cancelar</button>
+  </div>`;
+}
+
+function updTotal() {
+  const t = newItems.reduce((s,i) => s+i.price*i.qty, 0);
+  const el = document.getElementById('ntotal');
+  if (el) el.textContent = fmt(t);
+  // re-render qty displays
+  render();
+}
+
+function renderIngresos() {
+  const ords = ingMes === 'total' ? orders : orders.filter(o => o.fecha && o.fecha.startsWith(ingMes));
+  const total = ords.reduce((s,o)=>s+o.total,0);
+  const cob = ords.filter(o=>o.estado!=='Pendiente').reduce((s,o)=>s+o.total,0);
+  const porCob = ords.filter(o=>o.estado==='Pendiente').reduce((s,o)=>s+o.total,0);
+  const counts = {};
+  ords.forEach(o=>o.items.forEach(i=>{
+    const k=i.name.split(' (')[0];
+    counts[k]=(counts[k]||0)+i.qty;
+  }));
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const mx = sorted[0]?.[1]||1;
+  const months = [
+    ['total','Todo'],['2025-07','Jul 25'],['2025-08','Ago 25'],['2025-09','Sep 25'],
+    ['2025-10','Oct 25'],['2025-11','Nov 25'],['2025-12','Dic 25'],
+    ['2026-01','Ene 26'],['2026-03','Mar 26'],['2026-04','Abr 26'],
+    ['2026-05','May 26'],['2026-06','Jun 26'],['2026-07','Jul 26']
+  ];
+  return `
+  <div class="month-scroll"><div class="month-tabs">
+    ${months.map(([v,l])=>`<button class="month-tab ${ingMes===v?'active':''}" onclick="ingMes='${v}';render()">${l}</button>`).join('')}
+  </div></div>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Facturado</div><div class="val" style="font-size:16px">${fmt(total)}</div></div>
+    <div class="metric"><div class="lbl">Cobrado</div><div class="val" style="font-size:16px;color:var(--accent)">${fmt(cob)}</div></div>
+    <div class="metric wide"><div class="lbl">Por cobrar</div><div class="val" style="color:var(--warn)">${fmt(porCob)}</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Más vendidos</div>
+    ${sorted.length ? sorted.map(([n,q])=>`
+    <div class="bar-item">
+      <div class="bar-head"><span>${n}</span><span style="font-weight:600">${q} u.</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(q/mx*100)}%"></div></div>
+    </div>`).join('') : '<div class="empty">Sin datos</div>'}
+  </div>`;
+}
+
+function renderComisiones() {
+  const base = (comMes ? orders.filter(o=>o.fecha&&o.fecha.startsWith(comMes)) : orders)
+    .filter(o=>o.estado!=='Pendiente');
+  const stats = {};
+  Object.keys(VEND).forEach(k=>stats[k]={total:0,pedidos:0});
+  base.forEach(o=>{if(o.vendedor&&stats[o.vendedor]){stats[o.vendedor].total+=o.total;stats[o.vendedor].pedidos++;}});
+  const totalCom = Object.keys(VEND).reduce((s,k)=>s+stats[k].total*(comPct[k]/100),0);
+  const months = [
+    ['','Todo el período'],['2025-07','Jul 2025'],['2025-08','Ago 2025'],['2025-09','Sep 2025'],
+    ['2025-10','Oct 2025'],['2025-11','Nov 2025'],['2025-12','Dic 2025'],
+    ['2026-01','Ene 2026'],['2026-03','Mar 2026'],['2026-04','Abr 2026'],
+    ['2026-05','May 2026'],['2026-06','Jun 2026'],['2026-07','Jul 2026']
+  ];
+  return `
+  <div class="card">
+    <div class="card-title">Porcentajes</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${Object.entries(VEND).map(([k,n])=>`
+      <div class="form-group">
+        <label>${n} (%)</label>
+        <input type="number" value="${comPct[k]}" min="0" max="100" onchange="comPct['${k}']=parseInt(this.value)||0;render()" style="padding:8px;font-size:15px">
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:0">Resumen</div>
+      <select class="inline" onchange="comMes=this.value;render()">
+        ${months.map(([v,l])=>`<option value="${v}" ${comMes===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    ${Object.entries(VEND).map(([k,n])=>`
+    <div class="com-row">
+      <span class="com-name">${n}${k==='german'?' <span class="badge badge-pend" style="font-size:10px">25%</span>':''}</span>
+      <span class="com-ventas">${fmt(stats[k].total)}</span>
+      <span class="com-pct">${comPct[k]}%</span>
+      <span class="com-val">${fmt(stats[k].total*(comPct[k]/100))}</span>
+    </div>`).join('')}
+    <div style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:1px solid var(--border);margin-top:4px;font-size:14px">
+      <span style="color:var(--text2);font-weight:600">Total a pagar</span>
+      <span style="font-weight:700;font-size:16px">${fmt(totalCom)}</span>
+    </div>
+    <p style="font-size:11px;color:var(--text3);margin-top:8px">Solo incluye pedidos pagados o entregados.</p>
+  </div>`;
+}
+
+async function doEstado(id, estado) {
+  const o = orders.find(o=>o.id===id);
+  if (o) { o.estado = estado; updateBadge(); }
+  try { await updateEstado(id, estado); setStatus('Sincronizado ✓', false); }
+  catch(e) { setStatus('Error al guardar', true); }
+}
+
+async function doDelete(id) {
+  if (!confirm('¿Eliminar este pedido?')) return;
+  orders = orders.filter(o=>o.id!==id);
+  updateBadge(); render();
+  try { await deleteOrder(id); setStatus('Sincronizado ✓', false); }
+  catch(e) { setStatus('Error al eliminar', true); }
+}
+
+async function doGuardar() {
+  const c = document.getElementById('nc')?.value.trim();
+  if (!c) { alert('Ingresá el nombre del cliente'); return; }
+  if (!newItems.length) { alert('Agregá al menos un producto'); return; }
+  const total = newItems.reduce((s,i)=>s+i.price*i.qty,0);
+  const order = {
+    id: Date.now(),
+    cliente: c,
+    telefono: document.getElementById('nt')?.value.trim()||'',
+    fecha: document.getElementById('nf')?.value||'',
+    vendedor: document.getElementById('nv')?.value||'',
+    notas: document.getElementById('nn')?.value.trim()||'',
+    items: newItems.map(i=>({name:i.name,price:i.price,qty:i.qty})),
+    total,
+    estado: 'Pendiente',
+    creado: new Date().toISOString()
+  };
+  orders.unshift(order);
+  newItems = [];
+  updateBadge();
+  tab = 'pedidos'; page = 0;
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  render();
+  try {
+    await saveOrder(order);
+    setStatus('Guardado ✓', false);
+  } catch(e) { setStatus('Error al guardar', true); }
+}
+
+// Init
+loadOrders();
+</script>
+</body>
+</html>
